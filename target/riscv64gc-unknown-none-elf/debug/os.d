@@ -1,1 +1,1 @@
-/home/os/os/target/riscv64gc-unknown-none-elf/debug/os: /home/os/os/src/entry.asm /home/os/os/src/lang_items.rs /home/os/os/src/main.rs
+/home/os/rCore/target/riscv64gc-unknown-none-elf/debug/os: /home/os/rCore/src/console.rs /home/os/rCore/src/entry.asm /home/os/rCore/src/lang_items.rs /home/os/rCore/src/main.rs /home/os/rCore/src/sbi.rs
