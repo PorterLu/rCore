@@ -1,9 +1,4 @@
-// os/src/sbi.rs
-
 #![allow(unused)]
-
-use core::arch::asm;
-
 const SBI_SET_TIMER: usize = 0;
 const SBI_CONSOLE_PUTCHAR: usize = 1;
 const SBI_CONSOLE_GETCHAR: usize = 2;
@@ -14,6 +9,7 @@ const SBI_REMOTE_SFENCE_VMA: usize = 6;
 const SBI_REMOTE_SFENCE_VMA_ASID: usize = 7;
 const SBI_SHUTDOWN: usize = 8;
 
+use core::arch::asm;
 #[inline(always)]
 fn sbi_call(which: usize, arg0: usize, arg1: usize, arg2: usize) -> usize {
     let mut ret;
@@ -29,7 +25,7 @@ fn sbi_call(which: usize, arg0: usize, arg1: usize, arg2: usize) -> usize {
     ret
 }
 
-pub fn console_putchar(c: usize){
+pub fn console_putchar(c: usize) {
     sbi_call(SBI_CONSOLE_PUTCHAR, c, 0, 0);
 }
 
