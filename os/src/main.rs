@@ -14,7 +14,6 @@ pub mod trap;
 #[path = "boards/qemu.rs"]
 mod board;
 
-
 //use crate::sbi::shutdown;
 use core::arch::global_asm;
 global_asm!(include_str!("entry.asm"));

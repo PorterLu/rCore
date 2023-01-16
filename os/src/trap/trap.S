@@ -13,6 +13,7 @@ __alltraps:
     # switch value of sp and ssratch, so
     # now kernel stack sp is in sp, user stack sp is in ssratch
     csrrw sp, sscratch, sp
+    addi sp, sp, -34*8
     sd x1, 1*8(sp)
     sd x3, 3*8(sp)
     .set n, 5
