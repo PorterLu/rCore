@@ -4,12 +4,15 @@
 
 #[macro_use]
 mod console;
-pub mod batch;
+mod config;
 mod lang_item;
+mod loader;
 mod sbi;
 mod sync;
 pub mod syscall;
+mod timer;
 pub mod trap;
+pub mod task;
 
 #[path = "boards/qemu.rs"]
 mod board;
@@ -24,8 +27,11 @@ pub fn rust_main() -> !{
     clear_bss();
     println!("[kernel] Hello, world!");
     trap::init();
-    batch::init();
-    batch::run_next_app();
+    loader::load_apps();
+    trap::enable_timer_interrupt();
+    timer::set_next_trigger();
+    task::run_first_task();
+    panic!("Unreachable in rust_main!");
 }
 
 fn clear_bss() {

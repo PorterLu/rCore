@@ -1,12 +1,13 @@
 mod context;
 
-use crate::batch::run_next_app;
+use crate::task::{exit_current_and_run_next, suspend_current_and_run_next};
+use crate::timer::set_next_trigger;
 use crate::syscall::syscall;
 use core::arch::global_asm;
 use riscv::register::{
     mtvec::TrapMode,
-    scause::{self, Exception, Trap},
-    stval, stvec,
+    scause::{self, Interrupt, Exception, Trap},
+    sie, stval, stvec,
 };
 
 global_asm!(include_str!("trap.S"));
@@ -19,6 +20,12 @@ pub fn init() {
 
     unsafe {
         stvec::write(__alltraps as usize, TrapMode::Direct);
+    }
+}
+
+pub fn enable_timer_interrupt(){
+    unsafe {
+        sie::set_stimer();
     }
 }
 
@@ -36,11 +43,15 @@ pub fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
         }
         Trap::Exception(Exception::InstructionFault) | Trap::Exception(Exception::StoreFault) | Trap::Exception(Exception::StorePageFault) => {
             println!("[kernel] PageFault application, kernel killed it.");
-            run_next_app();
+            exit_current_and_run_next();
         }
         Trap::Exception(Exception::IllegalInstruction) => {
             println!("[kernel] IllegalInstruction in application, kernel killed it.");
-            run_next_app();
+            exit_current_and_run_next();
+        }
+        Trap::Interrupt(Interrupt::SupervisorTimer) => {
+            set_next_trigger();
+            suspend_current_and_run_next();
         }
         _ => {
             panic!(
