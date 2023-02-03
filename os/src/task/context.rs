@@ -2,9 +2,9 @@
 #[repr(C)]
 pub struct TaskContext {
     /// return address 
-    ra: usize,
+    pub ra: usize,
     ///kernel stack pointer of app
-    sp: usize,
+    pub sp: usize,
     /// callee save register: s(0-11)
     s: [usize; 12],
 }
