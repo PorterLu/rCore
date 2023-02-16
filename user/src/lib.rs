@@ -6,6 +6,9 @@
 pub mod console;
 mod lang_items;
 mod syscall;
+pub mod task;
+
+use task::*;
 
 #[no_mangle]
 #[link_section = ".text.entry"]
@@ -48,4 +51,8 @@ pub fn yield_() -> isize {
 
 pub fn get_time() -> isize {
     sys_get_time()
+}
+
+pub fn get_task_info(id: usize, ts: *mut TaskInfo) -> isize {
+    sys_task_info(id, ts)
 }

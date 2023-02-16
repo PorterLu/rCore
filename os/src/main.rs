@@ -28,8 +28,10 @@ pub fn rust_main() -> !{
     println!("[kernel] Hello, world!");
     trap::init();
     loader::load_apps();
+    println!("apps loading over");
     trap::enable_timer_interrupt();
     timer::set_next_trigger();
+    println!("start running");
     task::run_first_task();
     panic!("Unreachable in rust_main!");
 }

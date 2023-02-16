@@ -1,9 +1,11 @@
 use core::arch::asm;
+use super::task::*;
 
 const SYSCALL_WRITE: usize = 64;
 const SYSCALL_EXIT: usize = 93;
 const SYSCALL_YIELD: usize = 124;
 const SYSCALL_GET_TIME: usize = 169;
+const SYS_TASK_INFO: usize = 410;
 
 fn syscall(id: usize, args: [usize; 3]) -> isize {
     let mut ret: isize;
@@ -33,4 +35,8 @@ pub fn sys_yield() -> isize {
 
 pub fn sys_get_time() -> isize {
     syscall(SYSCALL_GET_TIME, [0, 0, 0])
+}
+
+pub fn sys_task_info(id: usize, ts: *mut TaskInfo) -> isize {
+    syscall(SYS_TASK_INFO, [id, ts as usize, 0])
 }
