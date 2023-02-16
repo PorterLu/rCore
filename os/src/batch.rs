@@ -96,6 +96,16 @@ impl AppManager {
     pub fn move_to_next_app(&mut self) {
         self.current_app += 1;
     }
+
+    pub fn check_bound(&self, addr: usize) -> bool {
+        println!("{:#x}", addr);
+        if addr >= APP_BASE_ADDRESS && 
+            addr < APP_BASE_ADDRESS + APP_SIZE_LIMIT {
+                true
+            } else {
+                false
+            }
+    }
 }
 
 //defer the initialization to the first time to using it.
@@ -147,4 +157,8 @@ pub fn run_next_app() -> !{
         )) as *const _ as usize);
     }
     panic!("Unreachable in batch::run_current_app!");
+}
+
+pub fn check_bound(addr: usize) -> bool {
+    APP_MANAGER.exclusive_access().check_bound(addr)
 }
