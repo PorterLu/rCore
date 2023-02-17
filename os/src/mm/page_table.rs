@@ -1,6 +1,9 @@
 //! Implementation of [`PageTableEntry`] and [`PageTable`].
 
+use crate::mm::PhysAddr;
+
 use super::{frame_alloc, FrameTracker, PhysPageNum, StepByOne, VirtAddr, VirtPageNum};
+use _core::usize;
 use alloc::vec;
 use alloc::vec::Vec;
 use bitflags::*;
@@ -19,7 +22,7 @@ bitflags! {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 #[repr(C)]
 /// page table entry structure
 pub struct PageTableEntry {
@@ -114,13 +117,55 @@ impl PageTable {
         result
     }
     #[allow(unused)]
+    pub fn is_map(&self, vpn: VirtPageNum) -> bool {
+        let idxs = vpn.indexes();
+        let mut ppn = self.root_ppn;
+        for (i, idx) in idxs.iter().enumerate() {
+            let pte = &ppn.get_pte_array()[*idx];
+            if i == 2 {
+                return !pte.is_valid();            
+            }
+
+            if !pte.is_valid() {
+                return true;
+            }
+            ppn = pte.ppn();
+        }
+
+        panic!("should not reach here");
+    }
+    #[allow(unused)]
+    pub fn is_unmap(&self, vpn: VirtPageNum) -> bool {
+        let idxs = vpn.indexes();
+        let mut ppn = self.root_ppn;
+        for (i, idx) in idxs.iter().enumerate() {
+            let pte = &ppn.get_pte_array()[*idx];
+            if i == 2 {
+                return pte.is_valid();
+            }
+
+            if !pte.is_valid() {
+                return false;
+            }
+            ppn = pte.ppn();
+        }
+
+        panic!("should not reache here");
+    }
+
+    #[allow(unused)]
     pub fn map(&mut self, vpn: VirtPageNum, ppn: PhysPageNum, flags: PTEFlags) {
+        let vaddr: VirtAddr = vpn.into();
+        let paddr: PhysAddr = ppn.into();
+        println!("map {:?} -> {:?}", vaddr, paddr);
         let pte = self.find_pte_create(vpn).unwrap();
         assert!(!pte.is_valid(), "vpn {:?} is mapped before mapping", vpn);
         *pte = PageTableEntry::new(ppn, flags | PTEFlags::V);
     }
     #[allow(unused)]
     pub fn unmap(&mut self, vpn: VirtPageNum) {
+        let vaddr: VirtAddr = vpn.into();
+        println!("unmap {:?}", vaddr);
         let pte = self.find_pte(vpn).unwrap();
         assert!(pte.is_valid(), "vpn {:?} is invalid before unmapping", vpn);
         *pte = PageTableEntry::empty();

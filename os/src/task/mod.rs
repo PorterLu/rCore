@@ -14,7 +14,10 @@ mod switch;
 #[allow(clippy::module_inception)]
 mod task;
 
+//use std::fs::Permissions;
+
 use crate::loader::{get_app_data, get_num_app};
+use crate::mm::{MapPermission};
 use crate::sync::UPSafeCell;
 use crate::trap::TrapContext;
 use alloc::vec::Vec;
@@ -148,6 +151,42 @@ impl TaskManager {
             crate::board::QEMU_EXIT_HANDLE.exit_success();
         }
     }
+
+    fn is_map(&self, start: usize, len: usize) -> isize {
+        let inner = self.inner.exclusive_access();
+        let cur = inner.current_task;
+        inner.tasks[cur].memory_set.is_map(start, len)
+    }
+
+    fn is_unmap(&self, start: usize, len: usize) -> isize {
+        let inner = self.inner.exclusive_access();
+        let cur = inner.current_task;
+        inner.tasks[cur].memory_set.is_unmap(start, len)
+    }
+
+    fn map(&self, start: usize, len: usize, prot: usize) -> isize {
+        let mut inner = self.inner.exclusive_access();
+        let cur = inner.current_task;
+        let mut map_perm = MapPermission::U;
+        if (prot & 1) != 0 {
+            map_perm |= MapPermission::R;
+        }
+        if (prot & 2) != 0 {
+            map_perm |= MapPermission::W;
+        }
+        if (prot & 4) != 0 {
+            map_perm |= MapPermission::X;
+        }
+        inner.tasks[cur].memory_set.insert_framed_area(start.into(), (start + len).into(), map_perm);
+        0
+    }
+
+    fn unmap(&self, start: usize, len: usize) -> isize {
+        let mut inner = self.inner.exclusive_access();
+        let cur = inner.current_task;
+        inner.tasks[cur].memory_set.unmap(start, len);
+        0
+    }
 }
 
 /// Run the first task in task list.
@@ -191,4 +230,24 @@ pub fn current_user_token() -> usize {
 /// Get the current 'Running' task's trap contexts.
 pub fn current_trap_cx() -> &'static mut TrapContext {
     TASK_MANAGER.get_current_trap_cx()
+}
+
+/// whether the vpn in [start, start + len) is mapped
+pub fn is_map(start: usize, len: usize) -> isize {
+   TASK_MANAGER.is_map(start, len)
+}
+
+/// whether the vpn in [start, start + len] is unmapped
+pub fn is_unmap(start: usize, len: usize) -> isize {
+    TASK_MANAGER.is_unmap(start, len)
+}
+
+/// map a range
+pub fn map(start: usize, len: usize, prot: usize) -> isize {
+    TASK_MANAGER.map(start, len, prot)
+}
+
+/// unmap a range
+pub fn unmap(start: usize, len: usize) -> isize {
+    TASK_MANAGER.unmap(start, len)
 }

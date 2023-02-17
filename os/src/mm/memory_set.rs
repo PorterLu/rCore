@@ -230,6 +230,72 @@ impl MemorySet {
     pub fn translate(&self, vpn: VirtPageNum) -> Option<PageTableEntry> {
         self.page_table.translate(vpn)
     }
+    pub fn is_map(&self, start: usize, len: usize) -> isize {
+        let length = (len + PAGE_SIZE - 1) / PAGE_SIZE;
+        for i in 0..length {
+            let vaddr: VirtAddr = (start + i*PAGE_SIZE).into();
+            if !self.page_table.is_map(vaddr.into()) {
+                return -1;
+            }
+        }
+        return 0;
+    }
+    pub fn is_unmap(&self, start: usize, len: usize) -> isize {
+        let length = (len + PAGE_SIZE - 1) / PAGE_SIZE;
+        for i in 0..length {
+            let vaddr: VirtAddr = (start + i*PAGE_SIZE).into();
+            if !self.page_table.is_unmap(vaddr.into()) {
+                return -1;
+            }
+        }
+        return 0;
+    }
+
+    pub fn unmap(&mut self, start: usize, len: usize) -> isize {
+        let length = (len + PAGE_SIZE - 1) / PAGE_SIZE;
+        if length == 0 {
+            return 0;
+        }
+
+        let start_vaddr: VirtAddr = start.into();
+        let end_vaddr: VirtAddr = (start+len).into();
+        let mut left_area_index = 0;
+        let mut right_area_index = 0;
+        for i in 0..self.areas.len() {
+            if self.areas[i].vpn_range.get_start() <= end_vaddr.into() &&
+                self.areas[i].vpn_range.get_end() > end_vaddr.into() {
+                right_area_index = i; 
+            }
+
+            if self.areas[i].vpn_range.get_start() <= start_vaddr.into() &&
+                self.areas[i].vpn_range.get_end() > start_vaddr.into() {
+                    left_area_index = i;
+            }
+        }
+
+        let del_region_left = self.areas[left_area_index].vpn_range.get_start();
+        let del_region_right = self.areas[right_area_index].vpn_range.get_end(); 
+        let del_region_left_permission = self.areas[left_area_index].map_perm;
+        let del_region_right_permission = self.areas[right_area_index].map_perm;
+
+        for j in 0..self.areas.len() {
+                if (self.areas[j].vpn_range.get_start() <= del_region_left && del_region_left < self.areas[j].vpn_range.get_end()) ||
+                    (self.areas[j].vpn_range.get_start() <= del_region_right && del_region_right < self.areas[j].vpn_range.get_end()) ||
+                    (self.areas[j].vpn_range.get_start() >= del_region_left && self.areas[j].vpn_range.get_end() <= del_region_right) {
+                        self.areas[j].unmap(&mut self.page_table)
+                    }
+            }
+
+        if del_region_left < start.into() {
+            self.insert_framed_area(del_region_left.into(), start_vaddr.into(), del_region_left_permission);
+        }
+
+        if del_region_right > (start+len).into() {
+            self.insert_framed_area(end_vaddr.into(), del_region_right.into(),  del_region_right_permission); 
+        }
+
+        return 0;
+    }
 }
 
 /// map area structure, controls a contiguous piece of virtual memory
