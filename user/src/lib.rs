@@ -72,6 +72,10 @@ pub fn exec(path: &str) -> isize {
     sys_exec(path)
 }
 
+pub fn spawn(path: &str) -> isize {
+    sys_spawn(path)
+}
+
 pub fn wait(exit_code: &mut i32) -> isize {
     loop {
         match sys_waitpid(-1, exit_code as *mut _) {

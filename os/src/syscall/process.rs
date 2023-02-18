@@ -48,6 +48,11 @@ pub fn sys_exec(path: *const u8) -> isize {
     }
 }
 
+pub fn sys_spawn(path: *const u8) -> isize {
+
+    1
+}
+
 pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32) -> isize {
     let task = current_task().unwrap();
 
