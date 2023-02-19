@@ -104,3 +104,7 @@ pub fn sleep(period_ms: usize) {
         sys_yield();
     }
 }
+
+pub fn set_priority(prio: isize) -> isize {
+    sys_set_priority(prio as usize)
+}
