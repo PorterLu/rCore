@@ -42,6 +42,7 @@ lazy_static! {
         unsafe { UPSafeCell::new(PidAllocator::new()) };
 }
 
+#[derive(Debug)]
 pub struct PidHandle(pub usize);
 
 impl Drop for PidHandle {

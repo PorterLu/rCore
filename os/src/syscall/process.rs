@@ -49,8 +49,16 @@ pub fn sys_exec(path: *const u8) -> isize {
 }
 
 pub fn sys_spawn(path: *const u8) -> isize {
-
-    1
+    let token = current_user_token();
+    let path = translated_str(token, path);
+    if let Some(data) = get_app_data_by_name(path.as_str()) {
+        let task = current_task().unwrap();
+        let new_task = task.spawn(data);
+        let pid = new_task.pid.0;
+        add_task(new_task);
+        return pid as isize;
+    }
+    -1
 }
 
 pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32) -> isize {
@@ -78,5 +86,12 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32) -> isize {
         found_pid as isize
     } else {
         -2 
+    }
+}
+
+pub fn sys_set_priority(prio: isize) -> isize {
+    match prio {
+        prio if prio >= 2 => current_task().unwrap().set_priority(prio as u64),
+        _ => -1
     }
 }

@@ -12,3 +12,5 @@ pub const TRAP_CONTEXT: usize = TRAMPOLINE - PAGE_SIZE;
 /// Return (bottom, top) of a kernel stack in kernel space.
 
 pub use crate::board::{CLOCK_FREQ, MEMORY_END, MMIO};
+
+pub const BIG_STRIDE: u64 = 0x65526;
