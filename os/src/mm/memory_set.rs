@@ -10,6 +10,7 @@ use alloc::collections::BTreeMap;
 use alloc::sync::Arc;
 use alloc::vec::Vec;
 use core::arch::asm;
+use core::iter::Map;
 use lazy_static::*;
 use riscv::register::satp;
 
@@ -30,6 +31,11 @@ lazy_static! {
     /// a memory set instance through lazy_static! managing kernel space
     pub static ref KERNEL_SPACE: Arc<UPSafeCell<MemorySet>> =
         Arc::new(unsafe { UPSafeCell::new(MemorySet::new_kernel()) });
+}
+
+///Get kernelspace root ppn
+pub fn kernel_token() -> usize {
+	KERNEL_SPACE.exclusive_access().token()
 }
 
 /// memory set structure, controls virtual-memory space
@@ -231,7 +237,7 @@ impl MemorySet {
             elf.header.pt2.entry_point() as usize,
         )
     }
-    pub fn from_existed_user(user_space: &Self) -> Self {
+    pub fn from_existed_user(user_space: &Self) -> MemorySet {
         let mut memory_set = Self::new_bare();
         memory_set.map_trampoline();
         for area in user_space.areas.iter() {
@@ -286,7 +292,7 @@ impl MapArea {
             map_perm,
         }
     }
-    pub fn from_another(another: &Self) -> Self {
+    pub fn from_another(another: &MapArea) -> Self {
         Self {
             vpn_range: VPNRange::new(another.vpn_range.get_start(), another.vpn_range.get_end()),
             data_frames: BTreeMap::new(),

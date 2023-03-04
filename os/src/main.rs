@@ -16,6 +16,7 @@
 //! userspace.
 
 #![deny(warnings)]
+#![allow(unused_imports)]
 #![no_std]
 #![no_main]
 #![feature(panic_info_message)]
@@ -32,18 +33,19 @@ mod board;
 #[macro_use]
 mod console;
 mod config;
-mod lang_items;
-mod loader;
+mod drivers;
+pub mod fs;
+pub mod lang_items;
 pub mod mm;
-mod sbi;
+pub mod sbi;
 pub mod sync;
 pub mod syscall;
 pub mod task;
-mod timer;
+pub mod timer;
 pub mod trap;
 
 core::arch::global_asm!(include_str!("entry.asm"));
-core::arch::global_asm!(include_str!("link_app.S"));
+
 /// clear BSS segment
 fn clear_bss() {
     extern "C" {
@@ -63,13 +65,13 @@ pub fn rust_main() -> ! {
     println!("[kernel] Hello, world!");
     mm::init();
     mm::remap_test();
-    task::add_initproc();
-    println!("after initproc!");
-    trap::init();
+    
+	trap::init();
     //trap::enable_interrupt();
     trap::enable_timer_interrupt();
     timer::set_next_trigger();
-    loader::list_apps();
+	fs::list_apps();
+	task::add_initproc();
     task::run_tasks();
     panic!("Unreachable in rust_main!");
 }

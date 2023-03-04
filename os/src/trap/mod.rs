@@ -127,6 +127,8 @@ pub fn trap_return() -> ! {
 /// Unimplement: traps/interrupts/exceptions from kernel mode
 /// Todo: Chapter 9: I/O device
 pub fn trap_from_kernel() -> ! {
+	use riscv::register::sepc;
+	println!("stval = {:#x}, sepc = {:#x}", stval::read(), sepc::read());
     panic!("a trap from kernel!");
 }
 

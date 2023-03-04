@@ -1,9 +1,12 @@
 pub const CLOCK_FREQ: usize = 12500000;
-pub const MEMORY_END: usize = 0x81000000;
+pub const MEMORY_END: usize = 0x88000000;
 
 pub const MMIO: &[(usize, usize)] = &[
     (0x0010_0000, 0x00_2000),
+	(0x1000_1000, 0x00_1000),
 ];
+
+pub type BlockDeviceImpl = crate::drivers::block::VirtIOBlock;
 
 //ref:: https://github.com/andre-richter/qemu-exit
 use core::arch::asm;

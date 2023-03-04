@@ -1,8 +1,9 @@
 .PHONY: elf bianry build clean
 
+MODE := release
 TARGET := riscv64gc-unknown-none-elf
 APP_DIR := src/bin
-TARGET_DIR := target/$(TARGET)/release
+TARGET_DIR := target/$(TARGET)/$(MODE)
 APPS := $(wildcard $(APP_DIR)/*.rs)
 ELFS := $(patsubst $(APP_DIR)/%.rs, $(TARGET_DIR)/%, $(APPS))
 BINS := $(patsubst $(APP_DIR)/%.rs, $(TARGET_DIR)/%.bin, $(APPS))
@@ -12,10 +13,6 @@ OBJCOPY := rust-objcopy --binary-architecture=riscv64
 
 elf:
 	@cargo build --release
-	@echo $(APPS)
-	@echo $(ELFS)
-	@echo $(BINS)
-	#python3 build.py
 
 binary: elf
 	$(foreach elf, $(ELFS), $(OBJCOPY) $(elf) --strip-all -O binary $(patsubst $(TARGET_DIR)/%, $(TARGET_DIR)/%.bin, $(elf));)

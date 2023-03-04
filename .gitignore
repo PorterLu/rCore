@@ -1,1 +1,4 @@
 /target
+/.vscode
+os/target
+user/target

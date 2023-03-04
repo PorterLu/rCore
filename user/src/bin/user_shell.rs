@@ -22,9 +22,7 @@ pub fn main() -> i32 {
     let mut line: String = String::new();
     print!(">> ");
     loop {
-        //println!("get char before");
         let c = getchar();
-        //println!("sbi read return");
         match c {
             LF | CR => {
                 println!("");
