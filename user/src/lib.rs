@@ -7,6 +7,7 @@
 pub mod console;
 mod lang_items;
 mod syscall;
+pub mod fs;
 
 extern crate alloc;
 #[macro_use]
@@ -14,6 +15,7 @@ extern crate bitflags;
 
 use buddy_system_allocator::LockedHeap;
 use syscall::*;
+use fs::*;
 
 const USER_HEAP_SIZE: usize = 16384;
 
@@ -51,6 +53,18 @@ bitflags! {
 		const CREATE = 1 << 9;
 		const TRUNC = 1 << 10;
 	}
+}
+
+pub fn linkat(olddirfd: i32, oldpath: *const u8, newdirfd: i32, newpath: *const u8, flags: u32) -> i32 {
+	sys_linkat(oldpath, newpath, flags)
+}
+
+pub fn unlinkat(dirfd: i32, path: *const u8, flags: u32) -> i32 {
+	sys_unlinkat(path, flags)
+}
+
+pub fn fstat(fd: i32, st: *mut Stat) -> i32 {
+	sys_fstat(fd, st)
 }
 
 pub fn open(path: &str, flags: OpenFlags) -> isize {

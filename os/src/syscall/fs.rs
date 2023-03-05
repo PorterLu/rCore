@@ -1,6 +1,70 @@
-use crate::fs::{open_file, OpenFlags};
-use crate::mm::{translated_byte_buffer, translated_str, UserBuffer};
+use crate::fs::{open_file, OpenFlags, search_file, add_a_link, rm_a_link};
+use crate::mm::{translated_byte_buffer, translated_str, UserBuffer, PageTable, VirtAddr};
 use crate::task::{current_task, current_user_token};
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct Stat {
+	pub dev: u64,
+	pub ino: u64,
+	pub mode: StatMode,
+	pub nlink: u32,
+	pad: [u64; 7],
+}
+
+bitflags! {
+	pub struct StatMode: u32 {
+		const NULL = 0;
+		const DIR = 0o040000;
+		const FILE = 0o100000;
+	}
+}
+
+/// sys_linkat
+pub fn sys_linkat(oldpath: *const u8, newpath: *const u8, _flag: u32) -> isize {
+	//let task = current_task().unwrap();
+	let token = current_user_token();
+	let oldname = translated_str(token, oldpath);
+	let newname = translated_str(token, newpath);
+	if oldname == newname {
+		return -1;
+	} else if let Some(_) = search_file(oldname.as_str()) {
+		add_a_link(oldname.as_str(), newname.as_str());				
+		return 0;
+	}
+	-1
+}
+
+/// sys_unlinkat
+pub fn sys_unlinkat(path: *const u8, _flag: u32) -> isize {
+	let len = unsafe { (0usize..).find(|i| *((path as usize + *i) as *const u8) == 0).unwrap()};
+	let name = unsafe { core::str::from_utf8(core::slice::from_raw_parts(path, len)).unwrap()};
+	match search_file(name) {
+		Some(_) => rm_a_link(name),
+		None => return -1,
+	};
+	0
+}
+
+/// sys_fstat
+pub fn sys_fstat(fd: i32, st: *mut Stat) -> isize {
+	if fd <= 2 {
+		return -1;
+	}
+	let task = current_task().unwrap();
+	let token = current_user_token();
+	let st_addr:&mut Stat= PageTable::from_token(token)
+				.translate_va(VirtAddr::from(st as *const u8 as usize))
+				.unwrap()
+				.get_mut();
+	if let Some(file) = &task.inner_exclusive_access().fd_table[fd as usize] {
+		let file = file.clone();
+		file.stat(st_addr);
+	} else {
+		return -1;
+	}
+	0
+}
 
 /// sys_write:
 /// the task own a file table:

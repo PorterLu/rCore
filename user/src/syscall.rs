@@ -1,9 +1,13 @@
 use core::arch::asm;
+use super::fs::*;
 
+const SYSCALL_UNLINKAT: usize = 35;
+const SYSCALL_LINKAT: usize = 37;
 const SYSCALL_OPEN: usize = 56;
 const SYSCALL_CLOSE: usize = 57;
 const SYSCALL_READ: usize = 63;
 const SYSCALL_WRITE: usize = 64;
+const SYSCALL_FSTAT: usize = 80;
 const SYSCALL_EXIT: usize = 93;
 const SYSCALL_YIELD: usize = 124;
 const SYSCALL_GET_TIME: usize = 169;
@@ -24,6 +28,20 @@ fn syscall(id: usize, args: [usize; 3]) -> isize {
         );
     }
     ret
+}
+
+pub fn sys_linkat(oldpath: *const u8, newpath: *const u8, flags: u32) -> i32 {
+	// in this experiment, we fix olddirfd and newdirfd as AT_FDCWD
+	syscall(SYSCALL_LINKAT, [oldpath as usize, newpath as usize, flags as usize]) as i32
+}
+
+pub fn sys_unlinkat(path: *const u8, flags: u32) -> i32 {
+	// in this experiment, we fix dirfd as AT_FDCWD
+	syscall(SYSCALL_UNLINKAT, [path as usize, flags as usize, 0]) as i32
+}
+
+pub fn sys_fstat(fd: i32, st: *mut Stat) -> i32 {
+	syscall(SYSCALL_FSTAT, [fd as usize, st as usize, 0]) as i32
 }
 
 pub fn sys_open(path: &str, flags: u32) -> isize {
