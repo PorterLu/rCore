@@ -1,5 +1,6 @@
 //! File system in os
 mod inode;
+mod pipe;
 mod stdio;
 use crate::syscall::fs::Stat;
 
@@ -20,3 +21,4 @@ pub trait File: Send + Sync {
 
 pub use inode::{list_apps, open_file, OSInode, OpenFlags, search_file, add_a_link, rm_a_link};
 pub use stdio::{Stdin, Stdout};
+pub use pipe::{make_pipe, Pipe};
