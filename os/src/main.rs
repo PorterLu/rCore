@@ -1,22 +1,3 @@
-//! The main module and entrypoint
-//!
-//! Various facilities of the kernels are implemented as submodules. The most
-//! important ones are:
-//!
-//! - [`trap`]: Handles all cases of switching from userspace to the kernel
-//! - [`task`]: Task management
-//! - [`syscall`]: System call handling and implementation
-//!
-//! The operating system also starts in this module. Kernel code starts
-//! executing from `entry.asm`, after which [`rust_main()`] is called to
-//! initialize various pieces of functionality. (See its source code for
-//! details.)
-//!
-//! We then call [`task::run_first_task()`] and for the first time go to
-//! userspace.
-
-#![deny(warnings)]
-#![allow(unused_imports)]
 #![no_std]
 #![no_main]
 #![feature(panic_info_message)]
@@ -34,19 +15,20 @@ mod board;
 mod console;
 mod config;
 mod drivers;
-pub mod fs;
-pub mod lang_items;
-pub mod mm;
-pub mod sbi;
-pub mod sync;
-pub mod syscall;
-pub mod task;
-pub mod timer;
-pub mod trap;
+mod fs;
+mod lang_items;
+mod mm;
+mod sbi;
+mod sync;
+mod syscall;
+mod task;
+mod timer;
+mod trap;
 
-core::arch::global_asm!(include_str!("entry.asm"));
+use core::arch::global_asm;
 
-/// clear BSS segment
+global_asm!(include_str!("entry.asm"));
+
 fn clear_bss() {
     extern "C" {
         fn sbss();
@@ -59,19 +41,16 @@ fn clear_bss() {
 }
 
 #[no_mangle]
-/// the rust entry-point of os
 pub fn rust_main() -> ! {
     clear_bss();
     println!("[kernel] Hello, world!");
     mm::init();
     mm::remap_test();
-    
-	trap::init();
-    //trap::enable_interrupt();
+    trap::init();
     trap::enable_timer_interrupt();
     timer::set_next_trigger();
-	fs::list_apps();
-	task::add_initproc();
+    fs::list_apps();
+    task::add_initproc();
     task::run_tasks();
     panic!("Unreachable in rust_main!");
 }

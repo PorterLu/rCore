@@ -2,7 +2,6 @@
 mod inode;
 mod pipe;
 mod stdio;
-use crate::syscall::fs::Stat;
 
 use crate::mm::UserBuffer;
 /// File trait
@@ -15,8 +14,6 @@ pub trait File: Send + Sync {
     fn read(&self, buf: UserBuffer) -> usize;
     /// Write `UserBuffer` to file
     fn write(&self, buf: UserBuffer) -> usize;
-	/// state
-	fn stat(&self, st: &mut Stat) -> usize;
 }
 
 pub use inode::{list_apps, open_file, OSInode, OpenFlags, search_file, add_a_link, rm_a_link};

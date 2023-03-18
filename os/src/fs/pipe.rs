@@ -2,7 +2,6 @@ use super::File;
 use crate::mm::UserBuffer;
 use crate::sync::UPSafeCell;
 use alloc::sync::{Arc, Weak};
-use crate::syscall::fs::Stat;
 
 use crate::task::suspend_current_and_run_next;
 
@@ -171,7 +170,4 @@ impl File for Pipe {
             }
         }
     }
-	fn stat(&self, _st: &mut Stat) -> usize {
-		0
-	}
 }

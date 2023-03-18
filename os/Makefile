@@ -30,11 +30,12 @@ build: user_app fs-img
 qemu: build
 	$(QEMU) -m 256M -M $(MACHINE) \
 		-nographic \
-		-bios ../bootloader/rustsbi-qemu.bin \
-        -device loader,file=target/riscv64gc-unknown-none-elf/release/os.bin,addr=$(OS_ADDR) \
+		-kernel target/riscv64gc-unknown-none-elf/release/os.bin \
 		-drive file=$(FS_IMG),if=none,format=raw,id=x0 \
 		-device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
-
+		
+		#-bios ../bootloader/rustsbi-qemu.bin \
+        #-device loader,file=target/riscv64gc-unknown-none-elf/release/os.bin,addr=$(OS_ADDR) \
 		#-kernel target/riscv64gc-unknown-none-elf/release/os.bin
 gdbserver:
 	$(QEMU) -m 256M -M $(MACHINE) -nographic -kernel target/riscv64gc-unknown-none-elf/release/os.bin -s -S

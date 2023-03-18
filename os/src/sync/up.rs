@@ -8,6 +8,7 @@ use core::cell::{RefCell, RefMut};
 /// In order to get mutable reference of inner data, call
 /// `exclusive_access`.
 pub struct UPSafeCell<T> {
+    /// inner data
     inner: RefCell<T>,
 }
 
@@ -21,8 +22,7 @@ impl<T> UPSafeCell<T> {
             inner: RefCell::new(value),
         }
     }
-
-    /// Exclusive access. panic if the data has been borrowed
+    /// Panic if the data has been borrowed.
     pub fn exclusive_access(&self) -> RefMut<'_, T> {
         self.inner.borrow_mut()
     }
