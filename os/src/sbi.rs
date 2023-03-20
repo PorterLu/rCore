@@ -2,6 +2,7 @@
 #![allow(unused)]
 
 use core::arch::asm;
+extern crate sbi_rt;
 
 const SBI_SET_TIMER: usize = 0;
 const SBI_CONSOLE_PUTCHAR: usize = 1;
@@ -32,7 +33,8 @@ fn sbi_call(which: usize, arg0: usize, arg1: usize, arg2: usize) -> usize {
 
 /// use sbi call to set timer
 pub fn set_timer(timer: usize) {
-    sbi_call(SBI_SET_TIMER, timer, 0, 0);
+    //sbi_call(SBI_SET_TIMER, timer, 0, 0);
+    sbi_rt::set_timer(timer as u64);
 }
 
 /// use sbi call to putchar in console (qemu uart handler)
