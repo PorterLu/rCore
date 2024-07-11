@@ -1,2 +1,2 @@
 ## rCore record
-This is a repo for rCore records. Now, I have complete 8 chapters.
+rCore is a rv64 OS written in Rust. I have completed eight labs (Chinese blog in https://porterlu.github.io/tag/PYI5DtfFd/)
